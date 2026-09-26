@@ -1,0 +1,37 @@
+{
+ "format": "list",
+ "kicker": "BEFORE THE VET VISIT",
+ "title": "5 questions your vet will [[probably ask]]",
+ "items": [
+  {
+   "big": "When was the last deworming?",
+   "small": "The date, not “a few months ago”.",
+   "size": 70
+  },
+  {
+   "big": "What does she weigh now?",
+   "small": "A number beats “she looks fine”.",
+   "size": 70
+  },
+  {
+   "big": "What food, and how much?",
+   "small": "Per day, roughly.",
+   "size": 70
+  },
+  {
+   "big": "Any medicines right now?",
+   "small": "Names and how often.",
+   "size": 70
+  },
+  {
+   "big": "When is the next vaccine due?",
+   "small": "And which one.",
+   "size": 70
+  }
+ ],
+ "end": {
+  "title": "Stuck on any? [[Keep the answers in PetCare.]]",
+  "sub": "Vaccines, meds, weight and food, for every pet."
+ },
+ "facts": []
+}

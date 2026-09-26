@@ -1,0 +1,29 @@
+{
+ "format": "beats",
+ "beats": [
+  {
+   "big": "Half a kilo.",
+   "small": "Doesn't sound like much, right?"
+  },
+  {
+   "big": "On a 5 kg cat, that's [[10%.]]",
+   "small": "Of their whole body weight."
+  },
+  {
+   "big": "On a 70 kg adult, 10% is [[7 kg.]]",
+   "small": "You'd notice that.",
+   "size": 112
+  },
+  {
+   "big": "Fur hides it.",
+   "small": "A monthly weigh-in on the same scale shows it."
+  }
+ ],
+ "end": {
+  "title": "Weigh monthly. [[Watch the trend.]]",
+  "sub": "PetCare charts every weigh-in."
+ },
+ "facts": [
+  "F10"
+ ]
+}

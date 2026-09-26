@@ -1,0 +1,41 @@
+{
+ "format": "list",
+ "kicker": "DOG SAFETY",
+ "title": "6 kitchen foods that are [[dangerous for dogs]]",
+ "items": [
+  {
+   "big": "Chocolate",
+   "small": "Dangerous for dogs. Keep every bar out of reach."
+  },
+  {
+   "big": "Grapes and raisins",
+   "small": "Can cause kidney damage."
+  },
+  {
+   "big": "Onion, garlic, chives",
+   "small": "Damage red blood cells. Watch what's in the gravy."
+  },
+  {
+   "big": "Xylitol",
+   "small": "In sugar-free gum, sweets and some peanut butters."
+  },
+  {
+   "big": "Macadamia nuts",
+   "small": "Weakness, vomiting and tremors."
+  },
+  {
+   "big": "Alcohol",
+   "small": "Keep every glass out of reach."
+  }
+ ],
+ "footnote": "Source: ASPCA. Not a complete list.",
+ "end": {
+  "title": "Send this to [[whoever feeds your dog.]]",
+  "sub": "Ate something on the list? Call your vet straight away."
+ },
+ "facts": [
+  "F7",
+  "F8",
+  "F9"
+ ]
+}

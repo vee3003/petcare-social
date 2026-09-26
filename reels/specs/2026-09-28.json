@@ -1,0 +1,40 @@
+{
+ "format": "chat",
+ "kicker": "POV",
+ "title": "The vet asks one [[simple question.]]",
+ "messages": [
+  {
+   "from": "vet",
+   "name": "Vet",
+   "text": "When was Bruno's last rabies shot?"
+  },
+  {
+   "from": "me",
+   "name": "You",
+   "text": "Umm. March? Maybe April?"
+  },
+  {
+   "from": "action",
+   "text": "opens gallery"
+  },
+  {
+   "from": "action",
+   "text": "scrolls past 4,000 photos of Bruno"
+  },
+  {
+   "from": "me",
+   "name": "You",
+   "text": "Found it! Wait, that's the deworming bill."
+  },
+  {
+   "from": "vet",
+   "name": "Vet",
+   "text": "Take your time."
+  }
+ ],
+ "end": {
+  "title": "Every shot, every pet. [[One place.]]",
+  "sub": "PetCare keeps every vaccine and date."
+ },
+ "facts": []
+}

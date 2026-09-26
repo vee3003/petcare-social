@@ -1,0 +1,37 @@
+{
+ "format": "timeline",
+ "kicker": "PUPPY BASICS",
+ "title": "The puppy vaccine schedule [[in 12 seconds.]]",
+ "rows": [
+  {
+   "big": "6–8 weeks",
+   "small": "First core shot: distemper, parvo, hepatitis"
+  },
+  {
+   "big": "Every 2–4 weeks",
+   "small": "Repeat. One shot isn't enough."
+  },
+  {
+   "big": "Around 12 weeks",
+   "small": "First rabies shot, required by law in India"
+  },
+  {
+   "big": "16 weeks or older",
+   "small": "The dose not to skip. Don't stop the series early."
+  },
+  {
+   "big": "6 or 12 months",
+   "small": "Booster, then as your vet advises"
+  }
+ ],
+ "footnote": "Based on the WSAVA 2024 vaccination guidelines. Your vet sets the exact dates.",
+ "end": {
+  "title": "Save this for your next [[vet visit.]]",
+  "sub": "Then log every shot in PetCare."
+ },
+ "facts": [
+  "F1",
+  "F3",
+  "F4"
+ ]
+}

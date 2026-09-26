@@ -1,0 +1,32 @@
+{
+ "format": "timeline",
+ "kicker": "DEWORMING",
+ "title": "Dog and cat deworming, [[by age]]",
+ "rows": [
+  {
+   "big": "From 2 weeks old",
+   "small": "Every 2 weeks, until 2 months"
+  },
+  {
+   "big": "2 to 6 months",
+   "small": "Once a month"
+  },
+  {
+   "big": "Adults",
+   "small": "About four times a year"
+  },
+  {
+   "big": "Why it matters",
+   "small": "Some pet worms can infect people, children most of all"
+  }
+ ],
+ "footnote": "Based on CAPC guidelines. Your vet may adjust it for your pet.",
+ "end": {
+  "title": "Save this. [[Log every dose.]]",
+  "sub": "Then you'll never have to guess the last date."
+ },
+ "facts": [
+  "F5",
+  "F6"
+ ]
+}
