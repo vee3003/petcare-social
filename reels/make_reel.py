@@ -15,6 +15,8 @@ Spec formats (see reels/specs/ for real examples):
 
 Text wrapped in [[double brackets]] is drawn in the teal accent.
 Keep every health fact inside the playbook's fact bank.
+The hook (kicker + headline, or the first beat) is on screen from frame 0:
+no blank or logo-only opening, and the whole hook readable within 3 seconds.
 """
 import html, json, pathlib, re, shutil, subprocess, sys, tempfile
 from playwright.sync_api import sync_playwright
@@ -57,7 +59,7 @@ CSS = f"""
 @keyframes dimdot{{to{{background:#3A3A3C;box-shadow:none}}}}
 @keyframes cardin{{from{{opacity:0;transform:scale(.94)}}to{{opacity:1;transform:none}}}}
 @keyframes slidein{{from{{opacity:0;transform:translateX(80px)}}to{{opacity:1;transform:none}}}}
-.brand{{position:absolute;left:90px;top:230px;display:flex;align-items:center;gap:14px;animation:up .6s ease-out both}}
+.brand{{position:absolute;left:90px;top:230px;display:flex;align-items:center;gap:14px}}
 .kick{{font-size:30px;font-weight:700;letter-spacing:4px;color:{TEAL}}}
 h1{{margin:18px 0 0;font-family:'Bricolage Grotesque';font-weight:800;font-size:92px;line-height:1.0;letter-spacing:-3px}}
 .body{{position:absolute;inset:0}}
@@ -74,12 +76,12 @@ def anim(name, dur, delay, ease="ease-out"):
 
 def build(spec):
     fmt = spec["format"]
-    parts, t0 = [], 1.6
+    parts, t0 = [], 0.8  # hook is visible at frame 0; first content beat lands at 0.8 s
     head = ""
     if fmt != "beats":
         head = (f'<div style="position:absolute;left:90px;top:330px;width:900px">'
-                f'<div class="kick" style="animation:{anim("up", .6, .15)}">{rich(spec.get("kicker", ""))}</div>'
-                f'<h1 style="animation:{anim("up", .7, .3)}">{rich(spec["title"])}</h1></div>')
+                f'<div class="kick">{rich(spec.get("kicker", ""))}</div>'
+                f'<h1>{rich(spec["title"])}</h1></div>')
 
     if fmt == "timeline":
         rows, step = spec["rows"], 1.8
@@ -142,12 +144,13 @@ def build(spec):
         body_end = t + 0.6
 
     elif fmt == "beats":
-        beats, step, t = spec["beats"], spec.get("step", 2.4), 0.3
+        beats, step, t = spec["beats"], spec.get("step", 2.4), 0.0
         n = len(beats)
         for i, b in enumerate(beats):
-            a = anim("up", .5, t)
+            a = "none" if i == 0 else anim("up", .5, t)
             if i < n - 1:
-                a += ", " + anim("out", .35, t + step - 0.35, "ease-in")
+                a = (anim("out", .35, t + step - 0.35, "ease-in") if i == 0
+                     else a + ", " + anim("out", .35, t + step - 0.35, "ease-in"))
             parts.append(
                 f'<div style="position:absolute;left:90px;top:0;width:900px;height:1920px;display:flex;flex-direction:column;'
                 f'justify-content:center;padding-bottom:180px;gap:34px;animation:{a}">'
@@ -159,7 +162,7 @@ def build(spec):
     else:
         raise ValueError(f"unknown format {fmt}")
 
-    foot = (f'<div class="foot" style="animation:{anim("up", .5, 1.6)}">{rich(spec["footnote"])}</div>'
+    foot = (f'<div class="foot" style="animation:{anim("up", .5, 0.8)}">{rich(spec["footnote"])}</div>'
             if spec.get("footnote") else "")
     end = spec["end"]
     end_t = body_end + 0.4
@@ -200,7 +203,8 @@ def render(spec_path, out_path):
                     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "medium",
                     "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(out_path)], check=True)
     # keep three check frames next to the video for a quick visual review
-    for label, frac in (("a", 0.12), ("b", 0.6), ("c", 0.95)):
+    # check-0 is the very first frame: the hook must already be readable there
+    for label, frac in (("0", 0.0), ("a", 0.12), ("b", 0.6), ("c", 0.95)):
         shutil.copy(work / f"{min(n-1, int(n*frac)):04d}.jpg", out_path.with_suffix(f".check-{label}.jpg"))
     shutil.rmtree(work)
     print(f"{spec_path} -> {out_path} ({total:.1f}s)")
