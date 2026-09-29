@@ -1,2 +1,3 @@
 reels/out/*.check-*.jpg
 reels/clips/
+__pycache__/
