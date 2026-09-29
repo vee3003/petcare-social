@@ -33,5 +33,13 @@
   "title": "Stuck on any? [[Keep the answers in PetCare.]]",
   "sub": "Vaccines, meds, weight and food, for every pet."
  },
- "facts": []
+ "facts": [],
+ "opener": {
+  "file": "pexels-37132254-damir-k.mp4",
+  "start": 5.8,
+  "seconds": 2.2,
+  "text": "bottom",
+  "credit": "Video by Damir K on Pexels",
+  "url": "https://www.pexels.com/video/adorable-shih-tzu-dog-portrait-close-up-37132254/"
+ }
 }

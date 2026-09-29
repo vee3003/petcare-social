@@ -17,8 +17,18 @@ Text wrapped in [[double brackets]] is drawn in the teal accent.
 Keep every health fact inside the playbook's fact bank.
 The hook (kicker + headline, or the first beat) is on screen from frame 0:
 no blank or logo-only opening, and the whole hook readable within 3 seconds.
+
+Optional "opener": a real animal clip (Pexels/Pixabay, kept OUTSIDE the repo)
+plays first with the hook drawn over it from frame 0, then fades into the
+text reel. Clips are looked up in --clips DIR, $PETCARE_CLIPS or reels/clips/
+(git-ignored). Never commit the clips themselves, only the finished reel.
+    "opener": {"file": "pexels-123-name.mp4", "start": 2.0, "seconds": 2.2,
+               "text": "top" | "bottom", "focus_x": 0.5, "focus_y": 0.5,
+               "gamma": 1.0, "contrast": 1.04, "saturation": 1.08,
+               "credit": "Video by NAME on Pexels", "url": "https://www.pexels.com/video/..."}
+With "beats", the first beat is shown over the clip and the text reel starts at beat 2.
 """
-import html, json, pathlib, re, shutil, subprocess, sys, tempfile
+import argparse, html, json, os, pathlib, re, shutil, subprocess, sys, tempfile
 from playwright.sync_api import sync_playwright
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -180,9 +190,92 @@ def build(spec):
     return page, total
 
 
-def render(spec_path, out_path):
+XFADE = 0.3        # seconds of cross-fade from the clip into the text reel
+TRIM_AFTER = 0.5   # skip the text reel's first half-second (its hook-only moment) after an opener
+
+
+def build_overlay(spec):
+    """Transparent 1080x1920 page: scrim + brand + hook, drawn over the opener clip."""
+    op = spec["opener"]
+    pos = op.get("text", "top")
+    if spec["format"] == "beats":
+        b = spec["beats"][0]
+        hook = (f'<div style="font-family:\'Bricolage Grotesque\';font-weight:800;font-size:{b.get("size", 124)}px;'
+                f'line-height:1.0;letter-spacing:-4px">{rich(b["big"])}</div>'
+                + (f'<div style="margin-top:28px;font-size:44px;line-height:1.35;color:#E5E5EA">{rich(b["small"])}</div>'
+                   if b.get("small") else ""))
+    else:
+        hook = f'<div class="kick">{rich(spec.get("kicker", ""))}</div><h1>{rich(spec["title"])}</h1>'
+    if pos == "bottom":
+        scrim = ("linear-gradient(to top,rgba(0,0,0,.86) 0%,rgba(0,0,0,.62) 26%,rgba(0,0,0,0) 52%),"
+                 "linear-gradient(to bottom,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 20%)")
+        block = f'<div style="position:absolute;left:90px;bottom:430px;width:820px">{hook}</div>'
+    else:
+        scrim = "linear-gradient(to bottom,rgba(0,0,0,.84) 0%,rgba(0,0,0,.6) 28%,rgba(0,0,0,0) 50%)"
+        block = f'<div style="position:absolute;left:90px;top:330px;width:900px">{hook}</div>'
+    body = (f'<div style="position:absolute;inset:0;background:{scrim}"></div>'
+            f'<div class="brand">{paw(44, "#F5F5F7")}<span style="font-family:Poppins;font-size:34px">PetCare</span></div>'
+            f'{block}')
+    css = CSS.replace("html,body{margin:0;background:#000}", "html,body{margin:0;background:transparent}")
+    css = css.replace("overflow:hidden;background:#000;", "overflow:hidden;background:transparent;")
+    return f'<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body><div class="s">{body}</div></body></html>'
+
+
+def find_clip(name, clips_dir=None):
+    dirs = [clips_dir, os.environ.get("PETCARE_CLIPS"), str(HERE / "clips")]
+    for d in dirs:
+        if d and (pathlib.Path(d) / name).is_file():
+            return pathlib.Path(d) / name
+    raise FileNotFoundError(f"opener clip {name!r} not found in {[d for d in dirs if d]}")
+
+
+def probe(path):
+    out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                          "stream=width,height", "-of", "csv=p=0", str(path)], capture_output=True, text=True, check=True)
+    w, h = out.stdout.strip().split(",")[:2]
+    return int(w), int(h)
+
+
+def compose_opener(spec, clip, overlay_png, text_mp4, out_path, trim_after):
+    op = spec["opener"]
+    secs = float(op.get("seconds", 2.2))
+    w, h = probe(clip)
+    target = 1080 / 1920
+    if w / h > target:   # wider than 9:16: crop the sides
+        cw, ch = int(h * target) // 2 * 2, h
+    else:                # taller: crop top/bottom
+        cw, ch = w, int(w / target) // 2 * 2
+    x = int((w - cw) * float(op.get("focus_x", 0.5)))
+    y = int((h - ch) * float(op.get("focus_y", 0.5)))
+    # hook in the same place before and after the cut: plain cross-fade; otherwise dip through black
+    # so the two hook positions never show at once
+    trans = "fade" if op.get("text", "top") == "top" and spec["format"] != "beats" else "fadeblack"
+    eq = (f'eq=gamma={op.get("gamma", 1.0)}:contrast={op.get("contrast", 1.04)}:'
+          f'saturation={op.get("saturation", 1.08)}')
+    fc = (f"[0:v]crop={cw}:{ch}:{x}:{y},scale=1080:1920:flags=lanczos,{eq},unsharp=5:5:0.35,"
+          f"fps={FPS},format=yuv420p,setsar=1,settb=AVTB[bg];"
+          f"[1:v]format=rgba[ov];"
+          f"[bg][ov]overlay=0:0,format=yuv420p,trim=duration={secs},setpts=PTS-STARTPTS[op];"
+          f"[2:v]fps={FPS},format=yuv420p,setsar=1,settb=AVTB,setpts=PTS-STARTPTS[rl];"
+          f"[op][rl]xfade=transition={trans}:duration={XFADE}:offset={secs - XFADE:.3f}[v]")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error",
+                    "-ss", str(op.get("start", 0)), "-t", f"{secs + 0.5}", "-i", str(clip),
+                    "-loop", "1", "-t", f"{secs + 0.5}", "-i", str(overlay_png),
+                    "-ss", f"{trim_after}", "-i", str(text_mp4),
+                    "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
+                    "-filter_complex", fc, "-map", "[v]", "-map", "3:a", "-shortest",
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "medium",
+                    "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(out_path)], check=True)
+
+
+def render(spec_path, out_path, clips_dir=None):
     spec = json.loads(pathlib.Path(spec_path).read_text(encoding="utf-8"))
-    page, total = build(spec)
+    opener = spec.get("opener")
+    clip = find_clip(opener["file"], clips_dir) if opener else None
+    reel_spec = spec
+    if opener and spec["format"] == "beats":  # the first beat is shown over the clip
+        reel_spec = dict(spec, beats=spec["beats"][1:])
+    page, total = build(reel_spec)
     out_path = pathlib.Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     work = pathlib.Path(tempfile.mkdtemp(prefix="reel-"))
@@ -198,17 +291,37 @@ def render(spec_path, out_path):
             pg.evaluate(f"document.getAnimations().forEach(a=>{{a.pause();a.currentTime={i*1000/FPS}}})")
             pg.screenshot(path=str(work / f"{i:04d}.jpg"), type="jpeg", quality=92)
         b.close()
+    text_mp4 = work / "text.mp4" if opener else out_path
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", str(work / "%04d.jpg"),
                     "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo", "-shortest",
                     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "medium",
-                    "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(out_path)], check=True)
-    # keep three check frames next to the video for a quick visual review
+                    "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(text_mp4)], check=True)
+    if opener:
+        (work / "overlay.html").write_text(build_overlay(spec), encoding="utf-8")
+        with sync_playwright() as p:
+            b = p.chromium.launch()
+            pg = b.new_page(viewport={"width": 1080, "height": 1920})
+            pg.goto(f"file://{work / 'overlay.html'}")
+            pg.evaluate("document.fonts.ready")
+            pg.wait_for_timeout(400)
+            pg.screenshot(path=str(work / "overlay.png"), omit_background=True)
+            b.close()
+        trim = 0.0 if spec["format"] == "beats" else TRIM_AFTER
+        compose_opener(spec, clip, work / "overlay.png", text_mp4, out_path, trim)
+        total = float(opener.get("seconds", 2.2)) - XFADE + total - trim
+    # keep check frames next to the video for a quick visual review
     # check-0 is the very first frame: the hook must already be readable there
     for label, frac in (("0", 0.0), ("a", 0.12), ("b", 0.6), ("c", 0.95)):
-        shutil.copy(work / f"{min(n-1, int(n*frac)):04d}.jpg", out_path.with_suffix(f".check-{label}.jpg"))
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{total*frac:.3f}", "-i", str(out_path),
+                        "-frames:v", "1", "-q:v", "3", str(out_path.with_suffix(f".check-{label}.jpg"))], check=True)
     shutil.rmtree(work)
     print(f"{spec_path} -> {out_path} ({total:.1f}s)")
 
 
 if __name__ == "__main__":
-    render(sys.argv[1], sys.argv[2])
+    ap = argparse.ArgumentParser(description="Render a PetCare reel from a JSON spec.")
+    ap.add_argument("spec")
+    ap.add_argument("out")
+    ap.add_argument("--clips", help="folder holding opener clips (never inside the repo)")
+    a = ap.parse_args()
+    render(a.spec, a.out, a.clips)

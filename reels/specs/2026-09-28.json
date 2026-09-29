@@ -36,5 +36,13 @@
   "title": "Every shot, every pet. [[One place.]]",
   "sub": "PetCare keeps every vaccine and date."
  },
- "facts": []
+ "facts": [],
+ "opener": {
+  "file": "pexels-7516718-rdne-stock-project.mp4",
+  "start": 3.8,
+  "seconds": 2.0,
+  "text": "bottom",
+  "credit": "Video by RDNE Stock project on Pexels",
+  "url": "https://www.pexels.com/video/close-up-of-a-dog-7516718/"
+ }
 }

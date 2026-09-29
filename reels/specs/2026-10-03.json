@@ -25,5 +25,13 @@
  },
  "facts": [
   "F10"
- ]
+ ],
+ "opener": {
+  "file": "pexels-15159137-alina-vilchenko.mp4",
+  "start": 1.5,
+  "seconds": 2.4,
+  "text": "bottom",
+  "credit": "Video by Alina Vilchenko on Pexels",
+  "url": "https://www.pexels.com/video/a-cute-gray-cat-with-yellow-eyes-15159137/"
+ }
 }

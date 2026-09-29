@@ -28,5 +28,13 @@
  "facts": [
   "F5",
   "F6"
- ]
+ ],
+ "opener": {
+  "file": "pexels-39519111-celal-keser.mp4",
+  "start": 4.4,
+  "seconds": 2.2,
+  "text": "top",
+  "credit": "Video by celal keser on Pexels",
+  "url": "https://www.pexels.com/video/playful-puppy-panting-on-rocky-ground-39519111/"
+ }
 }

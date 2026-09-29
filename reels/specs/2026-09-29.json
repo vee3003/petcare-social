@@ -30,5 +30,14 @@
   "F2",
   "F3",
   "F11"
- ]
+ ],
+ "opener": {
+  "file": "pexels-7691953-roman-odintsov.mp4",
+  "start": 0.35,
+  "seconds": 2.0,
+  "text": "bottom",
+  "focus_y": 0.3,
+  "credit": "Video by ROMAN ODINTSOV on Pexels",
+  "url": "https://www.pexels.com/video/close-up-of-cat-s-face-7691953/"
+ }
 }
